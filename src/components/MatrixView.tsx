@@ -41,12 +41,19 @@ interface MatrixViewProps {
 }
 
 export const MatrixView: React.FC<MatrixViewProps> = ({ scale }) => {
-  const {
-    globalSettings,
-    selectedBackground,
-    getLightnessSteps,
-    accessibilitySettings,
-  } = useAppStore();
+  // Use specific selectors for better reactivity
+  const selectedBackground = useAppStore((state) => state.selectedBackground);
+  const getLightnessSteps = useAppStore((state) => state.getLightnessSteps);
+  const accessibilitySettings = useAppStore(
+    (state) => state.accessibilitySettings
+  );
+  const opacitySteps = useAppStore(
+    (state) => state.globalSettings.opacitySteps
+  );
+  const blendMode = useAppStore(
+    (state) => state.globalSettings.blendMode || "srgb"
+  );
+
   const [tooltipState, setTooltipState] = useState<TooltipState>({
     visible: false,
     content: null,
@@ -62,10 +69,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({ scale }) => {
   const [cellSize, setCellSize] = useState(56); // Dynamic cell size
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get lightness and opacity steps
+  // Get lightness steps
   const lightnessSteps = getLightnessSteps(scale);
-  const opacitySteps = globalSettings.opacitySteps;
-  const blendMode = globalSettings.blendMode || "srgb";
 
   // Calculate background luminance
   const bgLuminance = getLuminance(hexToSRGB(selectedBackground));
@@ -94,8 +99,8 @@ export const MatrixView: React.FC<MatrixViewProps> = ({ scale }) => {
 
   // Generate contrast matrix for documentation
   const contrastMatrix = useMemo(() => {
-    return generateContrastMatrix(generatedColors);
-  }, [generatedColors]);
+    return generateContrastMatrix(generatedColors, lightnessSteps);
+  }, [generatedColors, lightnessSteps]);
 
   // Filter contrast pairs based on current threshold settings
   // Respect global accessibility toggle - if disabled, show all cells
@@ -175,7 +180,9 @@ export const MatrixView: React.FC<MatrixViewProps> = ({ scale }) => {
     setZoomLevel(1);
   }, []);
 
-  const contrastFilterEnabled = scale.contrastThreshold?.enabled || false;
+  const contrastFilterEnabled =
+    accessibilitySettings.enabled &&
+    (scale.contrastThreshold?.enabled || false);
   const contrastFilterType = scale.contrastThreshold?.useApca ? "apca" : "wcag";
   const contrastFilterThreshold =
     contrastFilterType === "apca"

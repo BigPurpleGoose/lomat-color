@@ -25,7 +25,7 @@ export interface ColorScale {
   };
   // APCA-aligned contrast mode (optional feature)
   contrastMode?: 'standard' | 'apca-fixed' | 'luminance-matched' | 'apca-target' | 'wcag-target';  // Default: 'standard'
-  targetBackground?: string;  // Background preset name from BACKGROUND_PRESETS (default: 'canvas-bg')
+  targetBackground?: string;  // Background preset name from BACKGROUND_PRESETS (default: 'white')
   apcaTolerance?: number;  // APCA Lc tolerance, default: 1.5
   apcaTargetLc?: number;  // Target APCA Lc value for 'apca-target' mode (e.g., 75)
   wcagTargetRatio?: number;  // Target WCAG ratio for 'wcag-target' mode (e.g., 4.5)
@@ -51,6 +51,7 @@ export interface Project {
   createdAt: number;
   updatedAt: number;
   scales: ColorScale[];
+  globalSettings?: GlobalSettings;  // Snapshot of global settings when project was saved
 }
 
 // Global settings shared across all projects
@@ -60,6 +61,7 @@ export interface GlobalSettings {
   enforceGlobalLightness: boolean;  // Lock all scales to same lightness steps
   allowPerScaleOverride: boolean;   // Allow individual scales to override
   blendMode: 'srgb' | 'linear';     // Opacity blending mode: 'srgb' matches Figma/CSS, 'linear' is physically accurate
+  backgroundPresets?: BackgroundPreset[]; // Customizable background presets for contrast testing
 }
 
 // Global accessibility settings (unified across all views)
